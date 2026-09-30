@@ -2,7 +2,7 @@
   "name": "after-effects-mcp",
   "version": "0.1.0",
   "private": true,
-  "description": "After Effects MCP: controla Adobe After Effects y sus plugins desde Claude. By Videazo.",
+  "description": "Free After Effects MCP by Videazo Super Intelligence: controla Adobe After Effects y sus plugins desde Claude.",
   "type": "module",
   "main": "server.mjs",
   "scripts": {

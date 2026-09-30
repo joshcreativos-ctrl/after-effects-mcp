@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// After Effects MCP (by Videazo) · servidor MCP para Adobe After Effects.
+// Free After Effects MCP by Videazo Super Intelligence · servidor MCP para Adobe After Effects.
 // Claude → (MCP/stdio) → este servidor → (carpeta de intercambio) → puente JSX dentro de AE.
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
@@ -12,7 +12,7 @@ import { callAE, ensureBridge, readStatus, DIR } from "./bridge-client.mjs";
 import { findLatest as findAE } from "./ae-env.mjs";
 
 const server = new McpServer(
-  { name: "after-effects", version: "0.1.0" },
+  { name: "after-effects", title: "Free After Effects MCP by Videazo Super Intelligence", version: "0.1.0" },
   {
     instructions: [
       "Controla Adobe After Effects (Windows) con acceso a todo su modelo de scripting, incluidos los plugins instalados.",
@@ -179,12 +179,17 @@ tool(
       if (!dir || !fss.existsSync(dir)) continue;
       const items = [];
       const walk = async (d, depth) => {
+        if (label.startsWith("CEP")) {
+          // Una entrada por extensión (su carpeta), no cada archivo de dentro.
+          for (const e of await fs.readdir(d, { withFileTypes: true })) if (e.isDirectory()) items.push(e.name);
+          return;
+        }
         for (const e of await fs.readdir(d, { withFileTypes: true })) {
           const full = path.join(d, e.name);
           if (e.isDirectory()) {
             if (depth < 2 && label !== "AE Plug-ins") await walk(full, depth + 1);
             else if (label === "AE Plug-ins" || depth === 0) items.push(path.relative(dir, full) + path.sep);
-          } else if (/\.(aex|jsx|jsxbin|js|plugin|prm|dll|mxx)$/i.test(e.name) || label.startsWith("CEP")) items.push(path.relative(dir, full));
+          } else if (/\.(aex|jsx|jsxbin|js|plugin|prm|dll|mxx)$/i.test(e.name)) items.push(path.relative(dir, full));
         }
       };
       try { await walk(dir, 0); } catch {}
@@ -368,7 +373,7 @@ tool(
         try { var p = fx.property(A.params[i].key); if (!p) throw new Error("no existe"); VZ.set(p, A.params[i].value); }
         catch (e) { notes.push("No se pudo fijar '" + A.params[i].key + "': " + e); }
       }
-      var d = VZ.describe(fx, 2); d.notes = notes; d.layer = l.name;
+      var d = VZ.describe(fx, 0); d.notes = notes; d.layer = l.name; d.hint = "Usa ae_dump_properties con path [\"ADBE Effect Parade\", \"" + fx.name + "\"] para ver sus parametros.";
       return d;`, a, { undo: "Videazo MCP" }))
 );
 

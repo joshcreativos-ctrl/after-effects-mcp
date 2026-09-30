@@ -1,9 +1,9 @@
 #!/usr/bin/env node
-// Instalador de After Effects MCP (by Videazo) para Windows.
+// Instalador de Free After Effects MCP by Videazo Super Intelligence (Windows).
 //   node install.mjs               instala y registra en Claude Code y Claude Desktop
 //   node install.mjs --dry-run     muestra qué haría, sin tocar nada
 //   node install.mjs --uninstall   quita todo
-//   Opciones: --no-claude-code  --no-desktop
+//   Opciones: --no-claude-code --no-claude-desktop --no-codex --no-cursor --no-gemini --no-windsurf
 // No pide administrador: todo va a carpetas del usuario.
 import fs from "node:fs";
 import path from "node:path";
@@ -38,7 +38,7 @@ const installs = findInstalls();
 if (!installs.length) { say("No encontré After Effects en Program Files\\Adobe. Instálalo primero."); process.exit(1); }
 const versions = [...new Set(installs.map((i) => i.version).filter(Boolean))];
 
-say(UNINSTALL ? "Desinstalando After Effects MCP…" : "Instalando After Effects MCP…");
+say(UNINSTALL ? "Desinstalando Free After Effects MCP…" : "Instalando Free After Effects MCP…");
 say(`After Effects encontrado: ${installs.map((i) => `${i.name} (${i.version ?? "?"})`).join(", ")}\n`);
 
 // ---------- 1. puente dentro de After Effects (carpeta de inicio del usuario) ----------
@@ -80,45 +80,78 @@ if (!UNINSTALL) {
   }
 }
 
-// ---------- 3. registrar en Claude ----------
+// ---------- 3. registrar en los clientes MCP ----------
+// Claude Code y Claude Desktop, Codex, Cursor, Gemini CLI y Windsurf: se registra en los que estén instalados.
 const nodeExe = process.execPath;
+const HOMEDIR = process.env.USERPROFILE || process.env.HOME || "";
+const entry = { command: nodeExe, args: [SERVER] };
+const registered = [];
 
-if (!flags.has("--no-claude-code")) {
-  if (has("claude")) {
-    step(UNINSTALL ? "Quitando el MCP de Claude Code" : "Registrando el MCP en Claude Code (alcance usuario)");
-    if (!DRY) {
-      try { sh("claude", ["mcp", "remove", "--scope", "user", NAME]); } catch {}
-      if (!UNINSTALL) {
-        try { sh("claude", ["mcp", "add", "--scope", "user", NAME, "--", `"${nodeExe}"`, `"${SERVER}"`]); }
-        catch (e) { warn(`No pude registrarlo en Claude Code: ${String(e.stderr || e.message).split("\n")[0]}`); }
-      }
-    }
+function backup(file) {
+  if (fs.existsSync(file)) fs.copyFileSync(file, `${file}.bak-videazo`);
+}
+function editJson(file) {
+  let json = {};
+  if (fs.existsSync(file)) {
+    backup(file);
+    json = JSON.parse(fs.readFileSync(file, "utf8").trim() || "{}");
   } else {
-    say("  · Claude Code no está instalado; se omite.");
+    fs.mkdirSync(path.dirname(file), { recursive: true });
   }
+  json.mcpServers = json.mcpServers || {};
+  if (UNINSTALL) delete json.mcpServers[NAME];
+  else json.mcpServers[NAME] = entry;
+  fs.writeFileSync(file, JSON.stringify(json, null, 2));
+}
+function editToml(file) {
+  let t = "";
+  if (fs.existsSync(file)) {
+    backup(file);
+    t = fs.readFileSync(file, "utf8");
+  } else {
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+  }
+  // Quita la sección anterior (y sus subtablas) línea por línea, sin tocar el resto, y escribe la nueva.
+  const cabecera = `[mcp_servers.${NAME}]`;
+  const subtabla = `[mcp_servers.${NAME}.`;
+  const nl = t.includes("\r\n") ? "\r\n" : "\n";
+  const salida = [];
+  let saltando = false;
+  for (const linea of t.split(/\r?\n/)) {
+    const h = linea.trim();
+    if (h.startsWith("[") && h.endsWith("]")) saltando = h === cabecera || h.startsWith(subtabla);
+    if (!saltando) salida.push(linea);
+  }
+  t = salida.join(nl).trimEnd();
+  if (!UNINSTALL) t += `${nl}${nl}${cabecera}${nl}command = ${JSON.stringify(nodeExe)}${nl}args = [${JSON.stringify(SERVER)}]`;
+  fs.writeFileSync(file, `${t}${nl}`);
 }
 
-if (!flags.has("--no-desktop")) {
-  const cfgDir = path.join(process.env.APPDATA || "", "Claude");
-  const cfg = path.join(cfgDir, "claude_desktop_config.json");
-  if (fs.existsSync(cfgDir)) {
-    step(UNINSTALL ? "Quitando el MCP de Claude Desktop" : "Registrando el MCP en Claude Desktop");
-    if (!DRY) {
-      try {
-        let json = {};
-        if (fs.existsSync(cfg)) {
-          fs.copyFileSync(cfg, `${cfg}.bak-videazo`);
-          json = JSON.parse(fs.readFileSync(cfg, "utf8") || "{}");
-        }
-        json.mcpServers = json.mcpServers || {};
-        if (UNINSTALL) delete json.mcpServers[NAME];
-        else json.mcpServers[NAME] = { command: nodeExe, args: [SERVER] };
-        fs.writeFileSync(cfg, JSON.stringify(json, null, 2));
-      } catch (e) { warn(`No pude editar ${cfg}: ${e.message}`); }
-    }
-  } else {
-    say("  · Claude Desktop no está instalado; se omite.");
-  }
+const CLIENTS = [
+  {
+    id: "claude-code",
+    label: "Claude Code",
+    detect: () => has("claude"),
+    apply: () => {
+      try { sh("claude", ["mcp", "remove", "--scope", "user", NAME]); } catch {}
+      if (!UNINSTALL) sh("claude", ["mcp", "add", "--scope", "user", NAME, "--", `"${nodeExe}"`, `"${SERVER}"`]);
+    },
+  },
+  { id: "claude-desktop", label: "Claude Desktop", detect: () => fs.existsSync(path.join(process.env.APPDATA || "", "Claude")), apply: () => editJson(path.join(process.env.APPDATA || "", "Claude", "claude_desktop_config.json")) },
+  { id: "cursor", label: "Cursor", detect: () => fs.existsSync(path.join(HOMEDIR, ".cursor")), apply: () => editJson(path.join(HOMEDIR, ".cursor", "mcp.json")) },
+  { id: "codex", label: "Codex", detect: () => fs.existsSync(path.join(HOMEDIR, ".codex")), apply: () => editToml(path.join(HOMEDIR, ".codex", "config.toml")) },
+  { id: "gemini", label: "Gemini CLI", detect: () => fs.existsSync(path.join(HOMEDIR, ".gemini")), apply: () => editJson(path.join(HOMEDIR, ".gemini", "settings.json")) },
+  { id: "windsurf", label: "Windsurf", detect: () => fs.existsSync(path.join(HOMEDIR, ".codeium", "windsurf")), apply: () => editJson(path.join(HOMEDIR, ".codeium", "windsurf", "mcp_config.json")) },
+];
+
+for (const c of CLIENTS) {
+  // --no-claude-code, --no-codex… (y --no-desktop como atajo de --no-claude-desktop)
+  if (flags.has(`--no-${c.id}`) || (c.id === "claude-desktop" && flags.has("--no-desktop"))) continue;
+  if (!c.detect()) { say(`  · ${c.label} no está instalado; se omite.`); continue; }
+  step(`${UNINSTALL ? "Quitando el MCP de" : "Registrando el MCP en"} ${c.label}`);
+  if (DRY) { registered.push(c.label); continue; }
+  try { c.apply(); registered.push(c.label); }
+  catch (e) { warn(`No pude registrarlo en ${c.label}: ${String(e.stderr || e.message).split("\n")[0]}`); }
 }
 
 // ---------- 4. resumen y pendientes ----------
@@ -128,7 +161,7 @@ if (UNINSTALL) { say("Listo. Reinicia After Effects y Claude."); process.exit(0)
 const pending = [];
 for (const v of versions) if (scriptingPermission(v) === 0) { pending.push(PERMISSION_HELP); break; }
 if (aeRunning()) pending.push("After Effects está abierto: ciérralo y ábrelo de nuevo para que cargue el puente.");
-pending.push("Reinicia Claude (Desktop o Code) para que aparezca el MCP 'after-effects'.");
+pending.push(registered.length ? `Reinicia ${registered.join(", ")} para que aparezca el MCP 'after-effects'.` : "No encontré ningún cliente MCP instalado (Claude, Codex, Cursor…): mira el README para registrarlo a mano.");
 
 say(problems.length ? "Terminó con avisos (arriba)." : "Instalación lista.");
 say("\nPendiente:");

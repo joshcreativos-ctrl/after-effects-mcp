@@ -5,7 +5,7 @@ import path from "node:path";
 import { execFileSync } from "node:child_process";
 
 export const APPDATA = process.env.APPDATA || "";
-export const BRIDGE_DIR = process.env.VIDEAZO_AE_DIR || path.join(APPDATA, "Videazo", "ae-bridge");
+export const BRIDGE_DIR = path.join(APPDATA, "Videazo", "ae-bridge"); // debe coincidir con la carpeta por defecto del puente (bridge/videazo_bridge.jsx)
 export const BRIDGE_FILE = "videazo_bridge.jsx";
 export const BRIDGE_VERSION = 2; // debe coincidir con VZ_BRIDGE_VERSION en bridge/videazo_bridge.jsx
 
