@@ -8,7 +8,7 @@ Deja que **Claude** controle **Adobe After Effects**: proyectos, comps, capas, e
 
 ## Instalar (Windows)
 
-**Requisitos:** After Effects 2022 o más nuevo, y [Node.js 18+](https://nodejs.org).
+**Requisitos:** After Effects (probado en la 2026; otras versiones pueden funcionar pero no se han probado) y [Node.js 18+](https://nodejs.org).
 
 **Opción A · doble clic.** Descarga el ZIP (botón *Code → Download ZIP*), descomprímelo y abre **`Instalar.cmd`**. Si no tienes Node, te ofrece instalarlo.
 
