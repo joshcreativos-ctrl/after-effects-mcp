@@ -1,0 +1,55 @@
+{
+  "name": "after-effects-mcp",
+  "version": "0.1.0",
+  "private": true,
+  "description": "After Effects MCP: controla Adobe After Effects y sus plugins desde Claude. By Videazo.",
+  "type": "module",
+  "main": "server.mjs",
+  "scripts": {
+    "start": "node server.mjs",
+    "check": "node --check server.mjs && node --check bridge-client.mjs && node --check ae-env.mjs && node --check install.mjs",
+    "test": "node test/test-client.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "zod": "^3.25.0"
+  },
+  "bin": {
+    "after-effects-mcp": "install.mjs"
+  },
+  "files": [
+    "server.mjs",
+    "bridge-client.mjs",
+    "ae-env.mjs",
+    "install.mjs",
+    "bridge/",
+    "Instalar.cmd",
+    "Desinstalar.cmd",
+    "LICENSE",
+    "README.md"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "os": [
+    "win32"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/joshcreativos-ctrl/after-effects-mcp.git"
+  },
+  "homepage": "https://github.com/joshcreativos-ctrl/after-effects-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/joshcreativos-ctrl/after-effects-mcp/issues"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "after-effects",
+    "adobe",
+    "claude",
+    "extendscript",
+    "videazo"
+  ]
+}
