@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.1 · 2026-10-01
+
+- El instalador habla español, inglés, francés, portugués y chino (`--lang=xx`, o el idioma de Windows).
+- Corrige `ae_add_effect` (error de sintaxis en el código enviado a After Effects) y agrega una prueba que revisa la sintaxis de todo el ExtendScript generado.
+- Guía de instalación en video con voz en 5 idiomas, en la página del proyecto.
+
 ## 0.1.0 · 2026-09-30
 
 Primera versión pública · First public release.

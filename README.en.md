@@ -14,7 +14,9 @@
 
 **Claude · Codex · Cursor · Gemini CLI · Windsurf**
 
-[Download ZIP](https://github.com/joshcreativos-ctrl/after-effects-mcp/archive/refs/heads/main.zip) · [Website](https://videazo.si/after-effects-mcp) · [Español](README.md)
+[Download ZIP](https://github.com/joshcreativos-ctrl/after-effects-mcp/archive/refs/heads/main.zip) · [Website and video guide](https://videazo.si/after-effects-mcp/en) · [Español](README.md)
+
+<sub>Voiced install guide in 5 languages: [Español](https://videazo.si/after-effects-mcp) · [English](https://videazo.si/after-effects-mcp/en) · [Français](https://videazo.si/after-effects-mcp/fr) · [Português](https://videazo.si/after-effects-mcp/pt) · [中文](https://videazo.si/after-effects-mcp/zh)</sub>
 
 <img src="assets/demo.png" alt="Frame made by Claude with this MCP: the text Free After Effects MCP above a yellow light line from the Video Copilot Saber plugin" width="720">
 
@@ -88,7 +90,7 @@ It is an Adobe security setting; the bridge needs it to exchange files with the 
 
 Then **restart After Effects and your agent**, and ask it: *"use ae_status"*.
 
-Installer options: `--dry-run`, `--uninstall` (or `Desinstalar.cmd`), and `--no-claude-code`, `--no-claude-desktop`, `--no-codex`, `--no-cursor`, `--no-gemini`, `--no-windsurf`.
+Installer options: `--dry-run`, `--uninstall` (or `Desinstalar.cmd`), `--lang=es|en|fr|pt|zh` (defaults to your Windows language), and `--no-claude-code`, `--no-claude-desktop`, `--no-codex`, `--no-cursor`, `--no-gemini`, `--no-windsurf`.
 
 > **Note:** automatic registration was tested in depth with Claude. For Codex, Cursor and Gemini CLI we verified the config is written correctly without touching the rest, but full use inside each one is not tested yet.
 

@@ -4,12 +4,14 @@
 //   node install.mjs --dry-run     muestra qué haría, sin tocar nada
 //   node install.mjs --uninstall   quita todo
 //   Opciones: --no-claude-code --no-claude-desktop --no-codex --no-cursor --no-gemini --no-windsurf
+//   Idioma:   --lang=es|en|fr|pt|zh (por defecto, el idioma de Windows)
 // No pide administrador: todo va a carpetas del usuario.
 import fs from "node:fs";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import { PERMISSION_HELP, BRIDGE_FILE, findInstalls, startupDir, startupFile, scriptingPermission } from "./ae-env.mjs";
+import { BRIDGE_FILE, findInstalls, startupDir, startupFile, scriptingPermission } from "./ae-env.mjs";
+import { pickLang, makeT } from "./install-i18n.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const flags = new Set(process.argv.slice(2));
@@ -18,10 +20,11 @@ const UNINSTALL = flags.has("--uninstall");
 const NAME = "after-effects";
 const HOME = path.join(process.env.LOCALAPPDATA || path.join(process.env.USERPROFILE || "", "AppData", "Local"), "Videazo", "ae-mcp");
 const SERVER = path.join(HOME, "server.mjs");
-const FILES = ["server.mjs", "bridge-client.mjs", "ae-env.mjs", "install.mjs", "package.json", "README.md", "LICENSE", "Instalar.cmd", "Desinstalar.cmd", path.join("bridge", BRIDGE_FILE)];
+const FILES = ["server.mjs", "bridge-client.mjs", "ae-env.mjs", "install.mjs", "install-i18n.mjs", "package.json", "README.md", "LICENSE", "Instalar.cmd", "Desinstalar.cmd", path.join("bridge", BRIDGE_FILE)];
 
+const t = makeT(pickLang());
 const say = (m = "") => console.log(m);
-const step = (m) => say(`${DRY ? "[simulación] " : ""}${m}`);
+const step = (m) => say(`${DRY ? t("dry_prefix") : ""}${m}`);
 const problems = [];
 const warn = (m) => { problems.push(m); say(`  ! ${m}`); };
 
@@ -31,24 +34,24 @@ function sh(cmd, args, opts = {}) {
 const has = (cmd) => { try { sh("where", [cmd]); return true; } catch { return false; } };
 const aeRunning = () => { try { return /AfterFX\.exe/i.test(sh("tasklist", ["/FI", '"IMAGENAME eq AfterFX.exe"', "/NH"])); } catch { return false; } };
 
-if (process.platform !== "win32") { say("Este instalador es solo para Windows por ahora."); process.exit(1); }
-if (Number(process.versions.node.split(".")[0]) < 18) { say(`Necesitas Node 18 o más (tienes ${process.versions.node}). Instálalo con: winget install OpenJS.NodeJS.LTS`); process.exit(1); }
+if (process.platform !== "win32") { say(t("only_windows")); process.exit(1); }
+if (Number(process.versions.node.split(".")[0]) < 18) { say(t("node_old", { v: process.versions.node })); process.exit(1); }
 
 const installs = findInstalls();
-if (!installs.length) { say("No encontré After Effects en Program Files\\Adobe. Instálalo primero."); process.exit(1); }
+if (!installs.length) { say(t("no_ae")); process.exit(1); }
 const versions = [...new Set(installs.map((i) => i.version).filter(Boolean))];
 
-say(UNINSTALL ? "Desinstalando Free After Effects MCP…" : "Instalando Free After Effects MCP…");
-say(`After Effects encontrado: ${installs.map((i) => `${i.name} (${i.version ?? "?"})`).join(", ")}\n`);
+say(UNINSTALL ? t("uninstall_title") : t("install_title"));
+say(`${t("ae_found", { list: installs.map((i) => `${i.name} (${i.version ?? "?"})`).join(", ") })}\n`);
 
 // ---------- 1. puente dentro de After Effects (carpeta de inicio del usuario) ----------
 for (const v of versions) {
   const target = startupFile(v);
   if (UNINSTALL) {
-    step(`Quitando el puente: ${target}`);
+    step(t("bridge_remove", { path: target }));
     if (!DRY) fs.rmSync(target, { force: true });
   } else {
-    step(`Instalando el puente en After Effects ${v}: ${target}`);
+    step(t("bridge_install", { v, path: target }));
     if (!DRY) {
       fs.mkdirSync(startupDir(v), { recursive: true });
       fs.copyFileSync(path.join(here, "bridge", BRIDGE_FILE), target);
@@ -59,11 +62,11 @@ for (const v of versions) {
 // ---------- 2. servidor MCP en una carpeta estable ----------
 if (UNINSTALL) {
   if (path.resolve(here) !== path.resolve(HOME)) {
-    step(`Borrando ${HOME}`);
+    step(t("home_remove", { path: HOME }));
     if (!DRY) fs.rmSync(HOME, { recursive: true, force: true });
   }
 } else if (path.resolve(here) !== path.resolve(HOME)) {
-  step(`Copiando el servidor a ${HOME}`);
+  step(t("server_copy", { path: HOME }));
   if (!DRY) {
     for (const f of FILES) {
       const dest = path.join(HOME, f);
@@ -73,10 +76,10 @@ if (UNINSTALL) {
   }
 }
 if (!UNINSTALL) {
-  step("Instalando dependencias (npm install)…");
+  step(t("npm_install"));
   if (!DRY) {
     try { sh("npm", ["install", "--omit=dev", "--no-audit", "--no-fund"], { cwd: HOME }); }
-    catch (e) { warn(`npm install falló: ${String(e.stderr || e.message).split("\n")[0]}`); }
+    catch (e) { warn(t("npm_fail", { msg: String(e.stderr || e.message).split("\n")[0] })); }
   }
 }
 
@@ -147,23 +150,23 @@ const CLIENTS = [
 for (const c of CLIENTS) {
   // --no-claude-code, --no-codex… (y --no-desktop como atajo de --no-claude-desktop)
   if (flags.has(`--no-${c.id}`) || (c.id === "claude-desktop" && flags.has("--no-desktop"))) continue;
-  if (!c.detect()) { say(`  · ${c.label} no está instalado; se omite.`); continue; }
-  step(`${UNINSTALL ? "Quitando el MCP de" : "Registrando el MCP en"} ${c.label}`);
+  if (!c.detect()) { say(`  · ${t("not_installed", { label: c.label })}`); continue; }
+  step(t(UNINSTALL ? "unregister" : "register", { label: c.label }));
   if (DRY) { registered.push(c.label); continue; }
   try { c.apply(); registered.push(c.label); }
-  catch (e) { warn(`No pude registrarlo en ${c.label}: ${String(e.stderr || e.message).split("\n")[0]}`); }
+  catch (e) { warn(t("register_fail", { label: c.label, msg: String(e.stderr || e.message).split("\n")[0] })); }
 }
 
 // ---------- 4. resumen y pendientes ----------
 say();
-if (UNINSTALL) { say("Listo. Reinicia After Effects y Claude."); process.exit(0); }
+if (UNINSTALL) { say(t("uninstall_done")); process.exit(0); }
 
 const pending = [];
-for (const v of versions) if (scriptingPermission(v) === 0) { pending.push(PERMISSION_HELP); break; }
-if (aeRunning()) pending.push("After Effects está abierto: ciérralo y ábrelo de nuevo para que cargue el puente.");
-pending.push(registered.length ? `Reinicia ${registered.join(", ")} para que aparezca el MCP 'after-effects'.` : "No encontré ningún cliente MCP instalado (Claude, Codex, Cursor…): mira el README para registrarlo a mano.");
+for (const v of versions) if (scriptingPermission(v) === 0) { pending.push(t("perm_help")); break; }
+if (aeRunning()) pending.push(t("ae_open"));
+pending.push(registered.length ? t("restart_clients", { list: registered.join(", ") }) : t("no_clients"));
 
-say(problems.length ? "Terminó con avisos (arriba)." : "Instalación lista.");
-say("\nPendiente:");
+say(problems.length ? t("done_warn") : t("done_ok"));
+say(`\n${t("pending")}`);
 pending.forEach((p, i) => say(`  ${i + 1}. ${p}`));
-if (DRY) say("\n(Simulación: no se cambió nada.)");
+if (DRY) say(`\n${t("dry_note")}`);

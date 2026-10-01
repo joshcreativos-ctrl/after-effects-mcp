@@ -7,7 +7,7 @@
   "main": "server.mjs",
   "scripts": {
     "start": "node server.mjs",
-    "check": "node --check server.mjs && node --check bridge-client.mjs && node --check ae-env.mjs && node --check install.mjs && node test/syntax-jsx.mjs",
+    "check": "node --check server.mjs && node --check bridge-client.mjs && node --check ae-env.mjs && node --check install.mjs && node --check install-i18n.mjs && node test/syntax-jsx.mjs",
     "test": "node test/test-client.mjs"
   },
   "dependencies": {
@@ -22,6 +22,7 @@
     "bridge-client.mjs",
     "ae-env.mjs",
     "install.mjs",
+    "install-i18n.mjs",
     "bridge/",
     "Instalar.cmd",
     "Desinstalar.cmd",
