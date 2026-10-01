@@ -373,7 +373,7 @@ tool(
         try { var p = fx.property(A.params[i].key); if (!p) throw new Error("no existe"); VZ.set(p, A.params[i].value); }
         catch (e) { notes.push("No se pudo fijar '" + A.params[i].key + "': " + e); }
       }
-      var d = VZ.describe(fx, 0); d.notes = notes; d.layer = l.name; d.hint = "Usa ae_dump_properties con path [\"ADBE Effect Parade\", \"" + fx.name + "\"] para ver sus parametros.";
+      var d = VZ.describe(fx, 0); d.notes = notes; d.layer = l.name; d.hint = 'Usa ae_dump_properties con path ["ADBE Effect Parade", "' + fx.name + '"] para ver sus parametros.';
       return d;`, a, { undo: "Videazo MCP" }))
 );
 
