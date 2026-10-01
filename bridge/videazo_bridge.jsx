@@ -7,16 +7,24 @@ $.global.VZ_BRIDGE_VERSION = 2;
 $.global.VZ_start = function () {
   var G = $.global;
 
-  // Necesita "Permitir que los scripts escriban archivos y accedan a la red".
+  // Necesita el permiso de scripting de After Effects (escribir archivos y acceder a la red).
   try {
     var allowed = app.preferences.getPrefAsLong("Main Pref Section v2", "Pref_SCRIPTING_FILE_NETWORK_SECURITY");
     if (allowed !== 1) {
       if (!G.VZ_ALERTED) {
         G.VZ_ALERTED = true;
-        alert("Videazo MCP necesita activar un ajuste de After Effects (una sola vez):\n\n" +
-          "Edición > Preferencias > Scripting y expresiones\n" +
-          "y activa \"Permitir que los scripts escriban archivos y accedan a la red\".\n\n" +
-          "Después reinicia After Effects.");
+        var lang = "en";
+        try { lang = String(app.isoLanguage).substr(0, 2); } catch (e0) {}
+        var M = {
+    es: ["Videazo MCP necesita activar un ajuste de After Effects (una sola vez):", "Editar > Preferencias > Scripts y expresiones", "y activa \"Permitir que las secuencias de comandos puedan escribir archivos y acceder a la red\".", "Despu\u00e9s reinicia After Effects."],
+    en: ["Videazo MCP needs one After Effects setting turned on (only once):", "Edit > Preferences > Scripting & Expressions", "and turn on \"Allow Scripts to Write Files and Access Network\".", "Then restart After Effects."],
+    fr: ["Videazo MCP a besoin d'un r\u00e9glage d'After Effects (une seule fois) :", "\u00c9dition > Pr\u00e9f\u00e9rences > Scripts et expressions", "et active \u00ab Autoriser les scripts \u00e0 \u00e9crire des fichiers et \u00e0 acc\u00e9der au r\u00e9seau \u00bb.", "Ensuite, red\u00e9marre After Effects."],
+    pt: ["O Videazo MCP precisa que voc\u00ea ative um ajuste do After Effects (uma \u00fanica vez):", "Editar > Prefer\u00eancias > Scripts e express\u00f5es", "e ative \"Permitir que os scripts gravem arquivos e acessem a rede\".", "Depois reinicie o After Effects."],
+    zh: ["Videazo MCP \u9700\u8981\u4f60\u5f00\u542f After Effects \u7684\u4e00\u9879\u8bbe\u7f6e\uff08\u4ec5\u9700\u4e00\u6b21\uff09\uff1a", "\u7f16\u8f91 > \u9996\u9009\u9879 > \u811a\u672c\u548c\u8868\u8fbe\u5f0f", "\u5e76\u52fe\u9009\u201c\u5141\u8bb8\u811a\u672c\u5199\u5165\u6587\u4ef6\u548c\u8bbf\u95ee\u7f51\u7edc\u201d\u3002", "\u7136\u540e\u91cd\u542f After Effects\u3002"],
+    zz: []
+  };
+        var m = M[lang] || M.en;
+        alert(m[0] + "\n\n" + m[1] + "\n" + m[2] + "\n\n" + m[3]);
       }
       return;
     }

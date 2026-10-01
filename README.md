@@ -60,7 +60,7 @@ Instala Free After Effects MCP by Videazo Super Intelligence en mi computador (W
 2. Descarga solo desde este enlace: https://github.com/joshcreativos-ctrl/after-effects-mcp/archive/refs/heads/main.zip. Guárdalo en una carpeta temporal y descomprímelo.
 3. Dentro de la carpeta descomprimida ejecuta `node install.mjs --dry-run` y muéstrame qué va a hacer.
 4. Con mi sí, ejecuta `node install.mjs`. No necesita administrador.
-5. Dime qué tengo que hacer yo, una sola vez: en After Effects, Edición > Preferencias > Scripting y expresiones, y activar "Permitir que los scripts escriban archivos y accedan a la red". Esa casilla la activo yo, no tú. Después reinicia After Effects y mi agente de IA.
+5. Dime qué tengo que hacer yo, una sola vez: en After Effects, Editar > Preferencias > Scripts y expresiones, y activar "Permitir que las secuencias de comandos puedan escribir archivos y acceder a la red". Esa casilla la activo yo, no tú. Después reinicia After Effects y mi agente de IA.
 6. Cuando vuelva, prueba con la herramienta ae_status y dime si funciona.
 ```
 
@@ -86,7 +86,7 @@ No pide administrador. Todo va a carpetas de tu usuario:
 
 ### El único paso manual
 
-En After Effects: **Edición > Preferencias > Scripting y expresiones** → activa **"Permitir que los scripts escriban archivos y accedan a la red"**.
+En After Effects: **Editar > Preferencias > Scripts y expresiones** → activa **"Permitir que las secuencias de comandos puedan escribir archivos y acceder a la red"**.
 
 Es un ajuste de seguridad de Adobe, y el puente lo necesita para intercambiar archivos con el servidor. Lo activas tú, una sola vez, a propósito: el instalador no lo toca.
 

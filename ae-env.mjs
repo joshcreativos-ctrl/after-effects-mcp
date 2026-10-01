@@ -55,7 +55,7 @@ export function installedBridgeVersion(version) {
   }
 }
 
-// Valor del permiso "Permitir que los scripts escriban archivos y accedan a la red": 1, 0 o null (no se pudo leer).
+// Valor del permiso "Permitir que las secuencias de comandos puedan escribir archivos y acceder a la red": 1, 0 o null (no se pudo leer).
 export function scriptingPermission(version) {
   const dir = path.join(APPDATA, "Adobe", "After Effects", version || "");
   try {
@@ -69,4 +69,4 @@ export function scriptingPermission(version) {
 }
 
 export const PERMISSION_HELP =
-  "Activa en After Effects: Edición > Preferencias > Scripting y expresiones > 'Permitir que los scripts escriban archivos y accedan a la red'. Luego reinicia After Effects. Es un ajuste de seguridad de Adobe: solo lo activa el usuario, una vez.";
+  "Activa en After Effects: Editar > Preferencias > Scripts y expresiones > 'Permitir que las secuencias de comandos puedan escribir archivos y acceder a la red'. Luego reinicia After Effects. Es un ajuste de seguridad de Adobe: solo lo activa el usuario, una vez.";
